@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="TweetinviAPI" Version="3.0.0" />
-    <PackageReference Include="Amazon.Lambda.Serialization.Json" Version="1.2.0" />
+    <PackageReference Include="TweetinviAPI" Version="5.0.3" />
+    <PackageReference Include="Amazon.Lambda.Serialization.Json" Version="1.8.0" />
     <PackageReference Include="Microsoft.SyndicationFeed.ReaderWriter" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>

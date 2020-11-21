@@ -3,17 +3,22 @@ namespace TweetRandomFeedItem
 {
     public class Helper
     {
-        public static string GetEnv(string environmentVariable)
+        public static T GetEnv<T>(string environmentVariable)
         {
-            return Environment.GetEnvironmentVariable(environmentVariable);
+            try
+            {
+                return (T)Convert.ChangeType(Environment.GetEnvironmentVariable(environmentVariable), typeof(T));
+            }
+            catch (ArgumentNullException)
+            {
+                Console.WriteLine($"The environment variable {environmentVariable} is required and missing.");
+                throw;
+            }
         }
 
-
-        public static string GetEnv(string environmentVariable, string defaultValue)
+        public static T GetEnv<T>(string environmentVariable, string defaultValue)
         {
-            var env = GetEnv(environmentVariable);
-
-            return !String.IsNullOrWhiteSpace(env) ? env : defaultValue;
+            return (T)Convert.ChangeType(Environment.GetEnvironmentVariable(environmentVariable) ?? defaultValue, typeof(T));
         }
     }
 }

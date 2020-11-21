@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.SyndicationFeed;
 using Microsoft.SyndicationFeed.Rss;
@@ -15,24 +16,23 @@ namespace TweetRandomFeedItem
         const int TWITTER_URL_SIZE = 23;
         const int MAX_TWEET_LENGTH = 280;
 
-        static Random rnd = new Random();
+        static Random random = new Random();
 
-        public static void Main()
+        public static async void Main()
         {
             var message = CreateMessageFromRandomFeedItem();
 
-            SendTweet(message);
+            await SendTweet(message);
 
             Console.WriteLine($"Tweeted message:\r\n\r\n{message}");
         }
 
         static string CreateMessageFromRandomFeedItem()
         {
-            var ghostUri = Helper.GetEnv("RSS_URI");
-            var maxTagCount = Convert.ToInt32(Helper.GetEnv("TWITTER_MAX_TAG_COUNT", DEFAULT_MAX_TAG_COUNT));
-            var maxItemsToRead = Convert.ToInt32(Helper.GetEnv("RSS_ITEM_RETRIEVAL_LIMIT", Int32.MaxValue.ToString()));
+            var ghostUri = Helper.GetEnv<string>("RSS_URI");
+            var maxTagCount = Helper.GetEnv<int>("TWITTER_MAX_TAG_COUNT", DEFAULT_MAX_TAG_COUNT);
+            var maxItemsToRead = Helper.GetEnv<int>("RSS_ITEM_RETRIEVAL_LIMIT", Int32.MaxValue.ToString());
 
-            var random = new Random();
             var pattern = new Regex("[- ]");
             var entries = new List<ISyndicationItem>();
 
@@ -69,16 +69,18 @@ namespace TweetRandomFeedItem
             return $"{selectedEntry.Title}{tagsFlat}\r\n{selectedEntry.Links.ToList()[0].Uri}";
         }
 
-        static void SendTweet(string message)
+        static async Task SendTweet(string message)
         {
-            var consumerKey = Helper.GetEnv("TWITTER_CONSUMER_KEY");
-            var consumerSecret = Helper.GetEnv("TWITTER_CONSUMER_SECRET");
-            var userAccessToken = Helper.GetEnv("TWITTER_USER_ACCESS_TOKEN");
-            var userAccessTokenSecret = Helper.GetEnv("TWITTER_USER_ACCESS_TOKEN_SECRET");
+            var consumerKey = Helper.GetEnv<string>("TWITTER_CONSUMER_KEY");
+            var consumerSecret = Helper.GetEnv<string>("TWITTER_CONSUMER_SECRET");
+            var userAccessToken = Helper.GetEnv<string>("TWITTER_USER_ACCESS_TOKEN");
+            var userAccessTokenSecret = Helper.GetEnv<string>("TWITTER_USER_ACCESS_TOKEN_SECRET");
 
-            Auth.SetUserCredentials(consumerKey, consumerSecret, userAccessToken, userAccessTokenSecret);
+            var userClient = new TwitterClient(consumerKey, consumerSecret, userAccessToken, userAccessTokenSecret);
 
-            Tweet.PublishTweet(message);
+            await userClient.Tweets.PublishTweetAsync(message);
+
+            Console.WriteLine($"Tweeted message:\r\n{message}\r\n");
         }
     }
 }
